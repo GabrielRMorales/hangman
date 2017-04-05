@@ -5,7 +5,6 @@ class Hangman
 
   def initialize
     list=File.readlines "5desk.csv"    
-    ask_to_load
     @word=list.sample    
     while @word.length<5 || @word.length>12
       @word=list.sample
@@ -16,18 +15,20 @@ class Hangman
     end   
     @wrong_letters=[]
     @counter=@word.length
+    ask_to_load
     puts "#{@word}"
     gameplay
   end
 
   def ask_to_load
+    puts "Welcome to hangman"
     puts "Want to load your previous game? Y/N"
     choice=gets.chomp
     if choice.upcase=="Y"
       load
       gameplay
     else
-      initialize
+      gameplay
     end
   end
 
@@ -52,7 +53,7 @@ class Hangman
       :wrong_letters=>@wrong_letters,
       :counter=>@counter
     }
-    File.open("save-file.yml","r+") do |f|
+    File.open("save-file.yml","w") do |f|
       f.write(saved_game.to_yaml)
     end
   end
@@ -66,19 +67,22 @@ class Hangman
   end
 
   def display
+    if @counter<1
+    puts "GAME OVER"
+    else
     puts "#{@display_word}"
         puts "Wrong letters: #{@wrong_letters}"
     puts "Remaining guess: #{@counter}"
     @counter-=1
+    end
   end
 
   def guess
-    #bug occurs with the first letter checking a capital
     puts "Guess a letter"
     user_guess=gets.chomp
     puts "You guessed #{user_guess}"
     word_check=@word.clone
-    if @word.include? (user_guess)
+    if @word.include? (user_guess.downcase)||(user_guess.upcase)
       @word.each_char do |char|
         if char==user_guess.upcase || char==user_guess.downcase
           @display_word[word_check.index(char)]=char
@@ -92,3 +96,4 @@ class Hangman
 
 end
 game=Hangman.new
+game.ask_to_load
